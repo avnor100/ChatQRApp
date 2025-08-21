@@ -1,19 +1,9 @@
-<<<<<<< HEAD
-name: Android Debug APK (Gradle)
+name: Android Debug APK
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
-    paths:
-      - 'android/**'
-      - 'app.config.js'
-      - 'App.js'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'babel.config.js'
-      - 'eas.json'
-      - '.github/workflows/android-debug.yml'
+  workflow-dispatch:
 
 jobs:
   build:
@@ -28,24 +18,19 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Download Gradle Wrapper (first run)
-        working-directory: android
-        run: ./gradlew --version
-
       - name: Build Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChatQRApp-debug-apk
+          name: app-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-=======
->>>>>>> 07946d4 (CI: build Android debug APK with GitHub Actions)
