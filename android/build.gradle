@@ -1,37 +1,25 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
+  ext {
+    // centralize versions if you like
+  }
   repositories {
     google()
     mavenCentral()
   }
   dependencies {
-    classpath('com.android.tools.build:gradle')
-    classpath('com.facebook.react:react-native-gradle-plugin')
-    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+    // NOTE: No com.android.tools.build:gradle here anymore in modern setups
   }
 }
-
-def reactNativeAndroidDir = new File(
-  providers.exec {
-    workingDir(rootDir)
-    commandLine("node", "--print", "require.resolve('react-native/package.json')")
-  }.standardOutput.asText.get().trim(),
-  "../android"
-)
 
 allprojects {
   repositories {
-    maven {
-      // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-      url(reactNativeAndroidDir)
-    }
-
     google()
     mavenCentral()
-    maven { url 'https://www.jitpack.io' }
+    maven { url = uri("$rootDir/../node_modules/react-native/android") }
   }
 }
 
-apply plugin: "expo-root-project"
-apply plugin: "com.facebook.react.rootproject"
+tasks.register("clean", Delete) {
+  delete rootProject.buildDir
+}
+

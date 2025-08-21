@@ -1,50 +1,14 @@
-name: Android Debug APK (Gradle)
+# Java heap + faster builds in CI
+org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
+org.gradle.daemon=false
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+# RN / AndroidX flags
+android.useAndroidX=true
+android.enableJetifier=true
 
-jobs:
-  build-android:
-    runs-on: ubuntu-latest
+# RN 0.74+ recommended settings
+react.parallelize=true
+react.experimental_bundling=true
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Node & install JS dependencies BEFORE Gradle touches settings.gradle
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install JS deps
-        run: npm ci
-
-      # JDK 17 for Android Gradle Plugin
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: 'gradle'
-
-      # Android SDK (Gradle will fetch the rest)
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      # Build debug APK
-      - name: Build debug APK
-        working-directory: android
-        run: |
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace --warning-mode all
-
-      # Upload the APK artifact
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+# If Hermes is enabled in your project, this is fine; otherwise remove
+hermesEnabled=true
