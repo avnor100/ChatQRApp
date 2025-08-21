@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Android Debug APK (Gradle)
 
 on:
@@ -46,3 +47,5 @@ jobs:
           name: ChatQRApp-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+=======
+>>>>>>> 07946d4 (CI: build Android debug APK with GitHub Actions)
