@@ -1,0 +1,6 @@
+import React,{useEffect,useState} from 'react'; import { View,Text,TouchableOpacity,Alert } from 'react-native'; import QRCode from 'react-native-qrcode-svg'; import { useAuth } from '../App'; import { createInvite } from '../src/api';
+export default function InviteScreen({route}){ const { groupId, groupName }=route.params; const { token }=useAuth(); const [invite,setInvite]=useState(null);
+const makeInvite=async()=>{ try{ const r=await createInvite(token,groupId,24,10); setInvite(r.invite); }catch(e){ Alert.alert('Error',e.message||'Failed to create invite'); } }; useEffect(()=>{ makeInvite(); },[]);
+const payload=invite?JSON.stringify({type:'groupInviteToken',token:invite.token}):'';
+return (<View style={{flex:1,alignItems:'center',justifyContent:'center',padding:24}}><Text style={{fontSize:18,marginBottom:12}}>Invite to "{groupName}"</Text>
+{invite?(<><QRCode value={payload} size={240}/><Text style={{marginTop:12,color:'#666'}}>Token: {invite.token.slice(0,8)}...</Text></>):(<TouchableOpacity onPress={makeInvite} style={{backgroundColor:'#111',padding:12,borderRadius:10}}><Text style={{color:'#fff',fontWeight:'700'}}>Create Invite</Text></TouchableOpacity>)}</View>); }

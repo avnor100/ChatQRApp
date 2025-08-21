@@ -1,0 +1,11 @@
+import React,{useEffect,useState} from 'react'; import { View,Text,TouchableOpacity,FlatList,TextInput,Alert } from 'react-native'; import { useAuth } from '../App'; import { listGroups, createGroup } from '../src/api';
+export default function HomeScreen({navigation}){ const { token }=useAuth(); const [groups,setGroups]=useState([]); const [name,setName]=useState('');
+useEffect(()=>{ let mounted=true; (async()=>{ try{ const r=await listGroups(token); if(mounted) setGroups(r.groups||[]);}catch(e){ Alert.alert('Error',e.message||'Failed to load groups'); }})(); return ()=>{mounted=false}; },[token]);
+const makeGroup=async()=>{ if(!name.trim()) return; try{ const r=await createGroup(token,name.trim()); setGroups(g=>[{id:r.group.id,name:r.group.name},...g]); setName(''); }catch(e){ Alert.alert('Error',e.message||'Failed to create group'); } };
+return (<View style={{flex:1}}><View style={{padding:12,borderBottomWidth:1,borderColor:'#eee'}}><View style={{flexDirection:'row',gap:8}}>
+<TextInput value={name} onChangeText={setName} placeholder='New group name' style={{flex:1,borderWidth:1,borderColor:'#ccc',borderRadius:10,padding:10}}/>
+<TouchableOpacity onPress={makeGroup} style={{backgroundColor:'#111',padding:12,borderRadius:10}}><Text style={{color:'#fff',fontWeight:'700'}}>Create</Text></TouchableOpacity></View>
+<View style={{flexDirection:'row',justifyContent:'space-between',marginTop:8}}><TouchableOpacity onPress={()=>navigation.navigate('ScanInvite')}><Text style={{color:'#07a',fontWeight:'700'}}>Scan Invite</Text></TouchableOpacity></View></View>
+<FlatList data={groups} keyExtractor={(i)=>i.id} renderItem={({item})=>(<TouchableOpacity onPress={()=>navigation.navigate('Group',{groupId:item.id,groupName:item.name})}>
+<View style={{padding:16,borderBottomWidth:1,borderColor:'#eee'}}><Text style={{fontSize:16,fontWeight:'600'}}>{item.name}</Text></View></TouchableOpacity>)} ListEmptyComponent={<Text style={{textAlign:'center',marginTop:32,color:'#666'}}>No groups yet.</Text>}/>
+</View>); }

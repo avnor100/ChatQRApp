@@ -1,0 +1,5 @@
+import React from 'react'; import { View,Text,TouchableOpacity,Alert } from 'react-native'; import { guestSignIn } from '../src/api'; import { useAuth } from '../App';
+export default function LoginScreen({navigation}){ const { setToken }=useAuth(); const handleContinue=async()=>{ try{ const r=await guestSignIn(); setToken(r.token); navigation.replace('Home'); }catch(e){ Alert.alert('Sign-in failed',e.message||'Try again'); } };
+return (<View style={{flex:1,alignItems:'center',justifyContent:'center',padding:24}}><Text style={{fontSize:28,fontWeight:'700',marginBottom:12}}>ChatQRApp</Text>
+<Text style={{textAlign:'center',color:'#555',marginBottom:24}}>Tap continue to sign in as guest.</Text>
+<TouchableOpacity onPress={handleContinue} style={{backgroundColor:'#111',paddingVertical:12,paddingHorizontal:24,borderRadius:12}}><Text style={{color:'#fff',fontWeight:'700'}}>Continue</Text></TouchableOpacity></View>); }
