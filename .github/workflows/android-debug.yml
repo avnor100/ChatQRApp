@@ -1,44 +1,48 @@
-name: Build Android Debug APK
+name: Android Debug APK (Gradle)
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'android/**'
+      - 'app.config.js'
+      - 'App.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'babel.config.js'
+      - 'eas.json'
+      - '.github/workflows/android-debug.yml'
 
 jobs:
-  build-android:
+  build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ChatQRApp
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Set up Java (JDK 17)
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
           cache: gradle
-
-      - name: Install JS dependencies
-        run: npm ci
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Build Android Debug APK
-        run: ./android/gradlew -p android assembleDebug --stacktrace
+      - name: Download Gradle Wrapper (first run)
+        working-directory: android
+        run: ./gradlew --version
+
+      - name: Build Debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-debug-apk
-          path: ChatQRApp/android/app/build/outputs/apk/debug/app-debug.apk
+          name: ChatQRApp-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
