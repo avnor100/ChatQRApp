@@ -18,12 +18,13 @@ module.exports = {
       }
     },
 
-    // ✅ Required for EAS Update
-    runtimeVersion: { policy: "sdkVersion" },
+    // ✅ Fixed runtimeVersion for bare workflow
+    runtimeVersion: "1.0.0",
+
     updates: {
-      // use *your* existing projectId here (you already have it)
       url: "https://u.expo.dev/55b3314f-0754-4695-9d15-39384b8813d9"
     },
+
     extra: {
       eas: { projectId: "55b3314f-0754-4695-9d15-39384b8813d9" }
     }
