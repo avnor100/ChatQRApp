@@ -1,14 +1,37 @@
-# Java heap + faster builds in CI
-org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
-org.gradle.daemon=false
+name: Android Debug APK (Gradle)
 
-# RN / AndroidX flags
-android.useAndroidX=true
-android.enableJetifier=true
+on:
+  workflow_dispatch: {}
 
-# RN 0.74+ recommended settings
-react.parallelize=true
-react.experimental_bundling=true
+jobs:
+  build-android-debug:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
 
-# If Hermes is enabled in your project, this is fine; otherwise remove
-hermesEnabled=true
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew clean assembleDebug --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/bundle/debug/*.aab
+          if-no-files-found: error
