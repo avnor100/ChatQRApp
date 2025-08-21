@@ -1,1 +1,13 @@
-{ "build": { "preview": { "android": { "buildType": "apk" }, "node": "18.20.4" } } }
+{
+  "cli": { "version": ">= 3.18.0" },
+  "build": {
+    "production": {
+      "android": { "gradleCommand": ":app:assembleRelease" },
+      "ios": { "simulator": false }
+    },
+    "preview": {
+      "android": { "gradleCommand": ":app:assembleDebug" },
+      "ios": { "simulator": true }
+    }
+  }
+}
