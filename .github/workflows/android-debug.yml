@@ -1,3 +1,4 @@
+# .github/workflows/android-debug.yml
 name: Android Debug APK (Gradle)
 
 on:
@@ -18,20 +19,45 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: gradle
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          # Tweak versions to match your project if needed
+          packages: |
+            platforms;android-34
+            build-tools;34.0.0
+            platform-tools
+            cmdline-tools;latest
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew clean assembleDebug --stacktrace
+      - name: Gradle info
+        run: ./gradlew --version
 
-      - name: Upload APK artifact
+      - name: Build Debug APK (verbose)
+        run: ./gradlew clean assembleDebug --stacktrace --info
+
+      - name: Upload APKs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: |
             android/app/build/outputs/apk/debug/*.apk
             android/app/build/outputs/bundle/debug/*.aab
-          if-no-files-found: error
+          if-no-files-found: warn
+
+      - name: Upload build reports & logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs-and-reports
+          path: |
+            **/build/reports/**
+            **/build/outputs/**
+            **/*.log
+          if-no-files-found: warn
