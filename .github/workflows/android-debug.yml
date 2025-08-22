@@ -18,46 +18,52 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
-      - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Make Gradle wrapper executable
         run: chmod +x android/gradlew
 
-      - name: Print env (debug)
-        run: |
-          echo "PWD=$(pwd)"
-          ls -la
-          ls -la android || true
-          ls -la android/app || true
-
-      - name: Build debug APK
+      - name: Print versions
         working-directory: android
-        # We tee logs to files so we can always upload them
         run: |
-          ./gradlew --version | tee gradle-version.log
-          ./gradlew assembleDebug --stacktrace --no-daemon | tee gradle-build.log
+          ./gradlew -v
+          ./gradlew --version
 
-      # Always collect logs/reports, even if the build failed
-      - name: Upload Gradle logs & reports
+      - name: Build APK (debug) with logs
+        working-directory: android
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs='-Xmx3g -Dfile.encoding=UTF-8'"
+          # keep daemon to speed up, but enable detailed logs
+        run: |
+          set -e
+          ./gradlew clean :app:assembleDebug \
+            --stacktrace --info --warning-mode all | tee gradle-build.log
+          echo "Problems report (if generated):"
+          ls -R build/reports || true
+          mkdir -p build/outputs/ci
+          cp -f gradle-build.log build/outputs/ci/ || true
+
+      - name: Upload logs & reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gradle-logs-and-reports
-          if-no-files-found: ignore
           path: |
             android/gradle-build.log
-            android/gradle-version.log
-            android/**/build/reports/**
-            android/**/build/test-results/**
-            **/hs_err_pid*.log
+            android/build/reports/**
+            android/app/build/reports/**
+            android/app/build/outputs/logs/**
+          if-no-files-found: warn
+          compression-level: 6
 
-      # Only upload APK if we actually built it
-      - name: Upload debug APK
+      - name: Upload APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: app-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+          compression-level: 6
