@@ -1,63 +1,63 @@
-# .github/workflows/android-debug.yml
 name: Android Debug APK (Gradle)
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
-  build-android-debug:
+  build-android:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: android
 
     steps:
-      - name: Check out repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
-          cache: gradle
+          java-version: '17'
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          # Tweak versions to match your project if needed
-          packages: |
-            platforms;android-34
-            build-tools;34.0.0
-            platform-tools
-            cmdline-tools;latest
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Make Gradle wrapper executable
-        run: chmod +x gradlew
+        run: chmod +x android/gradlew
 
-      - name: Gradle info
-        run: ./gradlew --version
+      - name: Print env (debug)
+        run: |
+          echo "PWD=$(pwd)"
+          ls -la
+          ls -la android || true
+          ls -la android/app || true
 
-      - name: Build Debug APK (verbose)
-        run: ./gradlew clean assembleDebug --stacktrace --info
+      - name: Build debug APK
+        working-directory: android
+        # We tee logs to files so we can always upload them
+        run: |
+          ./gradlew --version | tee gradle-version.log
+          ./gradlew assembleDebug --stacktrace --no-daemon | tee gradle-build.log
 
-      - name: Upload APKs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: |
-            android/app/build/outputs/apk/debug/*.apk
-            android/app/build/outputs/bundle/debug/*.aab
-          if-no-files-found: warn
-
-      - name: Upload build reports & logs
+      # Always collect logs/reports, even if the build failed
+      - name: Upload Gradle logs & reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gradle-logs-and-reports
+          if-no-files-found: ignore
           path: |
-            **/build/reports/**
-            **/build/outputs/**
-            **/*.log
-          if-no-files-found: warn
+            android/gradle-build.log
+            android/gradle-version.log
+            android/**/build/reports/**
+            android/**/build/test-results/**
+            **/hs_err_pid*.log
+
+      # Only upload APK if we actually built it
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
