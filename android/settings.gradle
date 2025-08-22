@@ -1,29 +1,24 @@
 pluginManagement {
   repositories {
-    // Where Gradle looks for plugins like com.android.application, com.facebook.react, kotlin, etc.
     gradlePluginPortal()
     google()
     mavenCentral()
     maven { url 'https://jitpack.io' }
   }
-  // Lets Gradle find the React Native Gradle plugin from node_modules
   includeBuild("../node_modules/@react-native/gradle-plugin")
 }
 
 plugins {
-  // Match the versions your project expects
   id("com.android.application") version "8.5.2" apply false
   id("org.jetbrains.kotlin.android") version "1.9.24" apply false
   id("com.facebook.react") version "0.74.3" apply false
 }
 
 dependencyResolutionManagement {
-  // Prefer centralized repositories (prevents subprojects from redefining)
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
   repositories {
     google()
     mavenCentral()
-    // React Native Android artifacts & JSC fallback
     maven { url("$rootDir/../node_modules/react-native/android") }
     maven { url("$rootDir/../node_modules/jsc-android/dist") }
     maven { url 'https://jitpack.io' }
